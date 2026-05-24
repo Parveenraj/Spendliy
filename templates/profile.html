@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Profile — Spendly{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+  <div class="profile-inner">
+
+    <!-- ── Section 1: User info card ───────────────────────────────── -->
+    <div class="profile-user-card">
+      <div class="profile-avatar">{{ user.initials }}</div>
+      <div class="profile-user-info">
+        <h1 class="profile-user-name">{{ user.name }}</h1>
+        <p class="profile-user-email">
+          <i data-lucide="mail" class="profile-icon"></i>
+          {{ user.email }}
+        </p>
+        <p class="profile-user-since">
+          <i data-lucide="calendar" class="profile-icon"></i>
+          Member since {{ user.member_since }}
+        </p>
+      </div>
+    </div>
+
+    <!-- ── Section 2: Summary stats row ────────────────────────────── -->
+    <div class="profile-stats-row">
+      <div class="profile-stat-card">
+        <span class="profile-stat-label">Total Spent</span>
+        <span class="profile-stat-value">{{ stats.total_spent }}</span>
+      </div>
+      <div class="profile-stat-card">
+        <span class="profile-stat-label">Transactions</span>
+        <span class="profile-stat-value">{{ stats.transaction_count }}</span>
+      </div>
+      <div class="profile-stat-card">
+        <span class="profile-stat-label">Top Category</span>
+        <span class="profile-stat-value profile-stat-value--category">{{ stats.top_category }}</span>
+      </div>
+    </div>
+
+    <!-- ── Section 3: Transaction history table ─────────────────────── -->
+    <div class="profile-card">
+      <div class="profile-card-header">
+        <h2 class="profile-section-title">
+          <i data-lucide="list" class="profile-icon"></i>
+          Transaction History
+        </h2>
+      </div>
+      <div class="profile-table-wrap">
+        <table class="profile-table">
+          <thead>
+            <tr>
+              <th class="col-date">Date</th>
+              <th class="col-desc">Description</th>
+              <th class="col-cat">Category</th>
+              <th class="col-amt">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for tx in transactions %}
+            <tr>
+              <td class="col-date">{{ tx.date }}</td>
+              <td class="col-desc">{{ tx.description }}</td>
+              <td class="col-cat">
+                <span class="profile-badge profile-badge--{{ tx.category | lower }}">
+                  {{ tx.category }}
+                </span>
+              </td>
+              <td class="col-amt profile-amount">{{ tx.amount }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Section 4: Category breakdown ────────────────────────────── -->
+    <div class="profile-card">
+      <div class="profile-card-header">
+        <h2 class="profile-section-title">
+          <i data-lucide="pie-chart" class="profile-icon"></i>
+          Category Breakdown
+        </h2>
+      </div>
+      <div class="profile-breakdown">
+        {% for cat in categories %}
+        <div class="profile-breakdown-row">
+          <div class="profile-breakdown-meta">
+            <span class="profile-breakdown-name">
+              <span class="profile-badge profile-badge--{{ cat.name | lower }}">{{ cat.name }}</span>
+            </span>
+            <span class="profile-breakdown-amount">{{ cat.amount }}</span>
+            <span class="profile-breakdown-pct">{{ cat.pct }}%</span>
+          </div>
+          <div class="profile-bar-track">
+            <div class="profile-bar-fill {{ cat.bar_class }}"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>lucide.createIcons();</script>
+{% endblock %}
