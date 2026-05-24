@@ -1,6 +1,6 @@
 import sqlite3
 import os
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 def get_db():
@@ -104,3 +104,13 @@ def create_user(name: str, email: str, password: str) -> int:
     user_id = cursor.lastrowid
     conn.close()
     return user_id
+
+
+def verify_login(email: str, password: str):
+    """Return the user row if credentials are valid, otherwise None."""
+    user = get_user_by_email(email)
+    if user is None:
+        return None
+    if check_password_hash(user["password_hash"], password):
+        return user
+    return None
