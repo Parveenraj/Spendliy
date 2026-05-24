@@ -1,7 +1,7 @@
 import os
 
 from flask import Flask, render_template, request, redirect, session, url_for
-from database.db import get_db, init_db, seed_db, get_user_by_email, create_user
+from database.db import get_db, init_db, seed_db, get_user_by_email, create_user, verify_login
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -22,6 +22,9 @@ def landing():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    if session.get("user_id"):
+        return redirect(url_for("landing"))
+
     if request.method == "GET":
         return render_template("register.html")
 
@@ -44,12 +47,37 @@ def register():
 
     user_id = create_user(name, email, password)
     session["user_id"] = user_id
+    session["user_name"] = name
     return redirect(url_for("landing"))
 
 
-@app.route("/login")
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    return render_template("login.html")
+    if session.get("user_id"):
+        return redirect(url_for("landing"))
+
+    if request.method == "GET":
+        return render_template("login.html")
+
+    # POST — process the form
+    email = request.form.get("email", "").strip()
+    password = request.form.get("password", "").strip()
+
+    error = None
+
+    if not email or not password:
+        error = "All fields are required."
+    else:
+        user = verify_login(email, password)
+        if user is None:
+            error = "Invalid email or password."
+
+    if error:
+        return render_template("login.html", error=error, email=email)
+
+    session["user_id"] = user["id"]
+    session["user_name"] = user["name"]
+    return redirect(url_for("landing"))
 
 
 # ------------------------------------------------------------------ #
@@ -68,7 +96,8 @@ def privacy():
 
 @app.route("/logout")
 def logout():
-    return "Logout — coming in Step 3"
+    session.clear()
+    return redirect(url_for("landing"))
 
 
 @app.route("/profile")
