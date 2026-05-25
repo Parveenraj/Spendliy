@@ -1,6 +1,7 @@
 import os
+from datetime import datetime
 
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for, flash
 from database.db import init_db, seed_db, get_user_by_email, create_user, verify_login
 from database.queries import get_user_by_id, get_summary_stats, get_recent_transactions, get_category_breakdown
 
@@ -10,6 +11,18 @@ app.secret_key = os.urandom(24)
 with app.app_context():
     init_db()
     seed_db()
+
+
+# ------------------------------------------------------------------ #
+# Helpers                                                             #
+# ------------------------------------------------------------------ #
+
+def _parse_date(value: str) -> str | None:
+    """Return value if valid YYYY-MM-DD; return None if empty; raise ValueError if malformed."""
+    if not value:
+        return None
+    datetime.strptime(value, "%Y-%m-%d")
+    return value
 
 
 # ------------------------------------------------------------------ #
@@ -109,14 +122,26 @@ def profile():
     uid = session["user_id"]
 
     # ── S1: user info ────────────────────────────────────────────────────
-    raw_user = get_user_by_id(uid)
-    if raw_user is None:
+    user = get_user_by_id(uid)
+    if user is None:
         session.clear()
         return redirect(url_for("login"))
-    user = raw_user
+
+    # ── Date filter extraction and validation ────────────────────────────
+    raw_from = request.args.get("date_from", "").strip()
+    raw_to = request.args.get("date_to", "").strip()
+
+    date_from = date_to = None
+    try:
+        date_from = _parse_date(raw_from)
+        date_to = _parse_date(raw_to)
+    except ValueError:
+        flash("Invalid date format. Please use YYYY-MM-DD.", "error")
+        date_from = date_to = None
+        raw_from = raw_to = ""
 
     # ── S2: summary stats ────────────────────────────────────────────────
-    raw_stats = get_summary_stats(uid)
+    raw_stats = get_summary_stats(uid, date_from=date_from, date_to=date_to)
     stats = {
         "total_spent":       f"₹{raw_stats['total_spent']:.2f}",
         "transaction_count": raw_stats["transaction_count"],
@@ -126,17 +151,25 @@ def profile():
     # ── S1: transactions ─────────────────────────────────────────────────
     transactions = [
         {**tx, "amount": f"₹{tx['amount']:.2f}"}
-        for tx in get_recent_transactions(uid)
+        for tx in get_recent_transactions(uid, date_from=date_from, date_to=date_to)
     ]
 
     # ── S3: category breakdown ───────────────────────────────────────────
     categories = [
         {**cat, "amount": f"₹{cat['amount']:.2f}"}
-        for cat in get_category_breakdown(uid)
+        for cat in get_category_breakdown(uid, date_from=date_from, date_to=date_to)
     ]
 
-    return render_template("profile.html", user=user, stats=stats,
-                           transactions=transactions, categories=categories)
+    return render_template(
+        "profile.html",
+        user=user,
+        stats=stats,
+        transactions=transactions,
+        categories=categories,
+        date_from=raw_from,
+        date_to=raw_to,
+        filter_active=(date_from is not None or date_to is not None),
+    )
 
 
 @app.route("/expenses/add")

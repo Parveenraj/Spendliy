@@ -339,4 +339,127 @@
     .profile-table td {
         padding: 0.75rem 0.75rem;
     }
+
+    .profile-filter-fields {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .profile-filter-input {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .profile-filter-actions {
+        width: 100%;
+    }
+}
+
+
+/* ── Flash messages ──────────────────────────────────────────────── */
+
+.profile-flash {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    border: 1px solid transparent;
+}
+
+.profile-flash--error {
+    background: var(--danger-light);
+    color: var(--danger);
+    border-color: var(--danger-light);
+}
+
+
+/* ── Date filter card ────────────────────────────────────────────── */
+
+.profile-filter-form {
+    padding: 1rem 1.5rem 1.25rem;
+}
+
+.profile-filter-fields {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.profile-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.profile-filter-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.profile-filter-input {
+    min-width: 160px;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    color: var(--ink);
+    background: var(--paper-card);
+}
+
+.profile-filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.profile-filter-btn {
+    padding: 0.55rem 1.25rem;
+    font-size: 0.875rem;
+    background: var(--accent);
+    color: var(--paper-card);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.profile-filter-btn:hover {
+    opacity: 0.9;
+}
+
+.profile-filter-clear {
+    font-size: 0.875rem;
+    color: var(--ink-muted);
+    text-decoration: none;
+}
+
+.profile-filter-clear:hover {
+    color: var(--ink);
+}
+
+
+/* ── Active-filter banner ────────────────────────────────────────── */
+
+.profile-filter-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--accent-light);
+    color: var(--accent);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+}
+
+.profile-filter-banner strong {
+    font-weight: 600;
 }
