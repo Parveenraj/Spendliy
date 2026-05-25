@@ -62,18 +62,24 @@
             </tr>
           </thead>
           <tbody>
-            {% for tx in transactions %}
-            <tr>
-              <td class="col-date">{{ tx.date }}</td>
-              <td class="col-desc">{{ tx.description }}</td>
-              <td class="col-cat">
-                <span class="profile-badge profile-badge--{{ tx.category | lower }}">
-                  {{ tx.category }}
-                </span>
-              </td>
-              <td class="col-amt profile-amount">{{ tx.amount }}</td>
-            </tr>
-            {% endfor %}
+            {% if transactions %}
+              {% for tx in transactions %}
+              <tr>
+                <td class="col-date">{{ tx.date }}</td>
+                <td class="col-desc">{{ tx.description }}</td>
+                <td class="col-cat">
+                  <span class="profile-badge profile-badge--{{ tx.category | lower }}">
+                    {{ tx.category }}
+                  </span>
+                </td>
+                <td class="col-amt profile-amount">{{ tx.amount }}</td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="4" class="profile-empty-state">No expenses yet</td>
+              </tr>
+            {% endif %}
           </tbody>
         </table>
       </div>
@@ -98,7 +104,7 @@
             <span class="profile-breakdown-pct">{{ cat.pct }}%</span>
           </div>
           <div class="profile-bar-track">
-            <div class="profile-bar-fill {{ cat.bar_class }}"></div>
+            <div class="profile-bar-fill" style="width: {{ cat.pct }}%"></div>
           </div>
         </div>
         {% endfor %}
