@@ -11,6 +11,18 @@
 <div class="profile-page">
   <div class="profile-inner">
 
+    <!-- ── Flash messages ──────────────────────────────────────────── -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+        <div class="profile-flash profile-flash--{{ category }}">
+          <i data-lucide="alert-circle" class="profile-icon"></i>
+          {{ message }}
+        </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
     <!-- ── Section 1: User info card ───────────────────────────────── -->
     <div class="profile-user-card">
       <div class="profile-avatar">{{ user.initials }}</div>
@@ -42,6 +54,52 @@
         <span class="profile-stat-value profile-stat-value--category">{{ stats.top_category }}</span>
       </div>
     </div>
+
+    <!-- ── Filter form ──────────────────────────────────────────────── -->
+    <div class="profile-card profile-filter-card">
+      <div class="profile-card-header">
+        <h2 class="profile-section-title">
+          <i data-lucide="filter" class="profile-icon"></i>
+          Filter by Date
+        </h2>
+      </div>
+      <form class="profile-filter-form"
+            method="get"
+            action="{{ url_for('profile') }}">
+        <div class="profile-filter-fields">
+          <div class="profile-filter-group">
+            <label for="date_from" class="profile-filter-label">From</label>
+            <input type="date" id="date_from" name="date_from"
+                   class="profile-filter-input"
+                   value="{{ date_from or '' }}">
+          </div>
+          <div class="profile-filter-group">
+            <label for="date_to" class="profile-filter-label">To</label>
+            <input type="date" id="date_to" name="date_to"
+                   class="profile-filter-input"
+                   value="{{ date_to or '' }}">
+          </div>
+          <div class="profile-filter-actions">
+            <button type="submit" class="profile-filter-btn">Filter</button>
+            <a href="{{ url_for('profile') }}" class="profile-filter-clear">Clear</a>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    {% if filter_active %}
+    <div class="profile-filter-banner">
+      <i data-lucide="calendar-range" class="profile-icon"></i>
+      Showing results
+      {% if date_from and date_to %}
+        from <strong>{{ date_from }}</strong> to <strong>{{ date_to }}</strong>
+      {% elif date_from %}
+        from <strong>{{ date_from }}</strong> onwards
+      {% else %}
+        up to <strong>{{ date_to }}</strong>
+      {% endif %}
+    </div>
+    {% endif %}
 
     <!-- ── Section 3: Transaction history table ─────────────────────── -->
     <div class="profile-card">
