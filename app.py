@@ -1,7 +1,8 @@
 import os
 
 from flask import Flask, render_template, request, redirect, session, url_for
-from database.db import get_db, init_db, seed_db, get_user_by_email, create_user, verify_login
+from database.db import init_db, seed_db, get_user_by_email, create_user, verify_login
+from database.queries import get_user_by_id, get_summary_stats, get_recent_transactions, get_category_breakdown
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -105,38 +106,33 @@ def profile():
     if not session.get("user_id"):
         return redirect(url_for("login"))
 
-    user = {
-        "name": "Alex Morgan",
-        "email": "alex@example.com",
-        "member_since": "May 2025",
-        "initials": "AM",
-    }
+    uid = session["user_id"]
 
+    # ── S1: user info ────────────────────────────────────────────────────
+    raw_user = get_user_by_id(uid)
+    if raw_user is None:
+        session.clear()
+        return redirect(url_for("login"))
+    user = raw_user
+
+    # ── S2: summary stats ────────────────────────────────────────────────
+    raw_stats = get_summary_stats(uid)
     stats = {
-        "total_spent": "₹313.25",
-        "transaction_count": 8,
-        "top_category": "Bills",
+        "total_spent":       f"₹{raw_stats['total_spent']:.2f}",
+        "transaction_count": raw_stats["transaction_count"],
+        "top_category":      raw_stats["top_category"],
     }
 
+    # ── S1: transactions ─────────────────────────────────────────────────
     transactions = [
-        {"date": "May 01, 2026", "description": "Lunch at cafe",         "category": "Food",          "amount": "₹12.50"},
-        {"date": "May 03, 2026", "description": "Monthly bus pass",       "category": "Transport",     "amount": "₹45.00"},
-        {"date": "May 05, 2026", "description": "Electricity bill",       "category": "Bills",         "amount": "₹120.00"},
-        {"date": "May 08, 2026", "description": "Pharmacy",               "category": "Health",        "amount": "₹30.00"},
-        {"date": "May 10, 2026", "description": "Streaming subscription", "category": "Entertainment", "amount": "₹15.00"},
-        {"date": "May 14, 2026", "description": "New shoes",              "category": "Shopping",      "amount": "₹60.00"},
-        {"date": "May 17, 2026", "description": "Miscellaneous",          "category": "Other",         "amount": "₹8.75"},
-        {"date": "May 20, 2026", "description": "Grocery run",            "category": "Food",          "amount": "₹22.00"},
+        {**tx, "amount": f"₹{tx['amount']:.2f}"}
+        for tx in get_recent_transactions(uid)
     ]
 
+    # ── S3: category breakdown ───────────────────────────────────────────
     categories = [
-        {"name": "Bills",         "amount": "₹120.00", "pct": 38, "bar_class": "bar-w-38"},
-        {"name": "Shopping",      "amount": "₹60.00",  "pct": 19, "bar_class": "bar-w-19"},
-        {"name": "Transport",     "amount": "₹45.00",  "pct": 14, "bar_class": "bar-w-14"},
-        {"name": "Food",          "amount": "₹34.50",  "pct": 11, "bar_class": "bar-w-11"},
-        {"name": "Health",        "amount": "₹30.00",  "pct": 10, "bar_class": "bar-w-10"},
-        {"name": "Entertainment", "amount": "₹15.00",  "pct": 5,  "bar_class": "bar-w-05"},
-        {"name": "Other",         "amount": "₹8.75",   "pct": 3,  "bar_class": "bar-w-03"},
+        {**cat, "amount": f"₹{cat['amount']:.2f}"}
+        for cat in get_category_breakdown(uid)
     ]
 
     return render_template("profile.html", user=user, stats=stats,
